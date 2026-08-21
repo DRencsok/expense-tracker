@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--Made layout with AI-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fa">
+    <title>{% block title %}Expense Tracker{% endblock %}</title>
+
+    <!-- Pico provides accessible defaults while styles.css holds the app's identity. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+    <header class="app-header">
+        <nav class="container" aria-label="Primary navigation">
+            <ul>
+                <li><a href="{{ url_for('main.homepage') }}" class="brand">Expense Tracker</a></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('main.homepage') }}" aria-current="page">Dashboard</a></li>
+                <li><a href="#" aria-disabled="true">Calendar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main-content" class="container app-main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section aria-label="Notifications">
+                    {% for category, message in messages %}
+                        <p role="alert" class="notice notice-{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+        <a href="{{ url_for('main.homepage') }}" aria-current="page">
+            <span aria-hidden="true">⌂</span>
+            <small>Dashboard</small>
+        </a>
+        <a href="#" aria-disabled="true">
+            <span aria-hidden="true">▦</span>
+            <small>Calendar</small>
+        </a>
+        <a href="#add-transaction" class="add-action" aria-label="Add transaction">
+            <span aria-hidden="true">+</span>
+        </a>
+    </nav>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

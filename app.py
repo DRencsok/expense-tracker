@@ -1,8 +1,3 @@
-from flask import Flask
+from app import create_app
 
-app = Flask(__name__)
-
-#Main page
-@app.route('/')
-def homepage():
-    return 'Hello, welcome to the homepage!'
+app = create_app()
