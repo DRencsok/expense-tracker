@@ -1,5 +1,7 @@
 print("Hello world!")
 if 1 == 0:
     print("")
-else:
+if 1 == 1:
     print("NO")
+else:
+    print("YES")
