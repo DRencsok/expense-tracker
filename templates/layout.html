@@ -1,60 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <!--Made layout with AI-->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f7f8fa">
-    <title>{% block title %}Expense Tracker{% endblock %}</title>
 
-    <!-- Pico provides accessible defaults while styles.css holds the app's identity. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    {% block head %}{% endblock %}
-</head>
-<body>
-    <a href="#main-content" class="skip-link">Skip to content</a>
+<html lang="en" data-bs-theme="dark">
 
-    <header class="app-header">
-        <nav class="container" aria-label="Primary navigation">
-            <ul>
-                <li><a href="{{ url_for('main.homepage') }}" class="brand">Expense Tracker</a></li>
-            </ul>
-            <ul>
-                <li><a href="{{ url_for('main.homepage') }}" aria-current="page">Dashboard</a></li>
-                <li><a href="#" aria-disabled="true">Calendar</a></li>
-            </ul>
-        </nav>
-    </header>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, width=device-width">
 
-    <main id="main-content" class="container app-main">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <section aria-label="Notifications">
-                    {% for category, message in messages %}
-                        <p role="alert" class="notice notice-{{ category }}">{{ message }}</p>
-                    {% endfor %}
-                </section>
-            {% endif %}
-        {% endwith %}
+        <!-- http://getbootstrap.com/docs/5.3/ -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <link href="styles.css" rel="stylesheet">
+        <title>{% block title %}{% endblock %} </title>
 
-        {% block content %}{% endblock %}
-    </main>
+        <!--Hamburger dropdown!-->
+        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">☰</button>
 
-    <nav class="bottom-nav" aria-label="Mobile navigation">
-        <a href="{{ url_for('main.homepage') }}" aria-current="page">
-            <span aria-hidden="true">⌂</span>
-            <small>Dashboard</small>
-        </a>
-        <a href="#" aria-disabled="true">
-            <span aria-hidden="true">▦</span>
-            <small>Calendar</small>
-        </a>
-        <a href="#add-transaction" class="add-action" aria-label="Add transaction">
-            <span aria-hidden="true">+</span>
-        </a>
-    </nav>
+        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">SaveIt</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <p>Try it out</p>
+        </div>
+        </div>
 
-    {% block scripts %}{% endblock %}
-</body>
+    </head>
+    <body>
+        <main class="container mt-5">
+            {% block main %}{% endblock %}
+        </main>
+        <footer>
+            <div class="container">
+                <p class="text-center text-muted">
+                    &copy; 2026 Expense Tracker. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    </body>
 </html>
