@@ -3,13 +3,17 @@
 {% block title %}SaveIt{% endblock %}
 
 {% block main %}
-<div class="container mt-5">
-    <h1>Welcome to SaveIt!</h1>
-</div>
-<div class="container">
-    <p>
-        Welcome to SaveIt!
+{% if session.get("user_id") %}
+    <div class="text-center">
+        <h1>Welcome back, {{ session.get("username") }}!</h1>
+       
+    </div>
+{% else %}
+<div class="text-center">
+    <h1 class="text-info-emphasis">Welcome to SaveIt!</h1>
+    <p class="text-secondary-emphasis">
+        Please register or log in to access the full features of the application. SaveIt helps you track your expenses, analyze your spending habits, and plan your budget effectively.
     </p>
 </div>
-    
+{% endif %}
 {% endblock %}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en" data-bs-theme="dark"
+<html lang="en" data-bs-theme="dark">
 
     <head>
         <meta charset="utf-8">
@@ -12,56 +12,49 @@
         <link href="/static/styles.css" rel="stylesheet">
         <title>{% block title %}{% endblock %} </title>
 
-        <!--Hamburger dropdown!-->
-        <button class="btn btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">☰</button>
-
-        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">
-                <!--Title!-->
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">
-                    <img src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
-                    Bootstrap
-                    </a>
-                </div>
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <!--List group!-->
-            <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
-                    The current link item
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">A second link item</a>
-                <a href="#" class="list-group-item list-group-item-action">A third link item</a>
-                <a href="#" class="list-group-item list-group-item-action">A fourth link item</a>
-                <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">A disabled link item</a>
-
-            </div>
-            <hr>
-            <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action">A second link item</a>
-                <a href="#" class="list-group-item list-group-item-action">A third link item</a>
-
-            </div>
-            </div>
-        </div>
-
     </head>
-    <body>
-        <div class="page">
-        <main class="container mt-5">
-            {% block main %}{% endblock %}
-        </main>
-        <footer>
-            <div class="container">
-                <p class="text-center text-muted">
-                    &copy; 2026 Expense Tracker. All rights reserved.
-                </p>
+    <body class="d-flex flex-column min-vh-100">
+        <nav class="navbar bg-body-tertiary">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#appMenu" aria-controls="appMenu" aria-label="Open navigation menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a class="navbar-brand ms-2" href="/index.html">SaveIt</a>
             </div>
-        </footer>
+        </nav>
+
+        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="appMenu" aria-labelledby="appMenuLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="appMenuLabel">SaveIt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="list-group">
+                    <a href="/index.html" class="list-group-item list-group-item-action">Home</a>
+                    {% if session.get("user_id") %}
+                        <a href="/analytics.html" class="list-group-item list-group-item-action">Analytics</a>
+                        <a href="/calendar.html" class="list-group-item list-group-item-action">Calendar</a>
+                        <hr>
+                        <a href="/profile.html" class="list-group-item list-group-item-action">Profile</a>
+                        <a href="/settings.html" class="list-group-item list-group-item-action">Settings</a>
+                    {% else %}
+                        <a href="/login.html" class="list-group-item list-group-item-action">Login/Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="page d-flex flex-column flex-grow-1">
+            <main class="container mt-5 flex-grow-1">
+                {% block main %}{% endblock %}
+            </main>
+            <footer class="bg-body-tertiary text-center text-lg-start mt-auto">
+                <div class="container">
+                    <p class="text-center text-muted">
+                        &copy; 2026 Expense Tracker. All rights reserved.
+                    </p>
+                </div>
+            </footer>
         </div>
     </body>
 </html>
