@@ -19,7 +19,7 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#appMenu" aria-controls="appMenu" aria-label="Open navigation menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <a class="navbar-brand ms-2" href="/index.html">SaveIt</a>
+                <a class="navbar-brand ms-2" href="{{ url_for('main.index') }}">SaveIt</a>
             </div>
         </nav>
 
@@ -30,15 +30,15 @@
             </div>
             <div class="offcanvas-body">
                 <div class="list-group">
-                    <a href="/index.html" class="list-group-item list-group-item-action">Home</a>
+                    <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action">Home</a>
                     {% if session.get("user_id") %}
-                        <a href="/analytics.html" class="list-group-item list-group-item-action">Analytics</a>
-                        <a href="/calendar.html" class="list-group-item list-group-item-action">Calendar</a>
+                        <a href="{{ url_for('main.analytics') }}" class="list-group-item list-group-item-action">Analytics</a>
+                        <a href="{{ url_for('main.calendar') }}" class="list-group-item list-group-item-action">Calendar</a>
                         <hr>
-                        <a href="/profile.html" class="list-group-item list-group-item-action">Profile</a>
-                        <a href="/settings.html" class="list-group-item list-group-item-action">Settings</a>
+                        <a href="{{ url_for('main.profile') }}" class="list-group-item list-group-item-action">Profile</a>
+                        <a href="{{ url_for('main.settings') }}" class="list-group-item list-group-item-action">Settings</a>
                     {% else %}
-                        <a href="/login.html" class="list-group-item list-group-item-action">Login/Register</a>
+                        <a href="{{ url_for('main.login') }}" class="list-group-item list-group-item-action">Login/Register</a>
                     {% endif %}
                 </div>
             </div>
@@ -46,7 +46,17 @@
 
         <div class="page d-flex flex-column flex-grow-1">
             <main class="container mt-5 flex-grow-1">
-                {% block main %}{% endblock %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+                    {% block main %}{% endblock %}
             </main>
             <footer class="bg-body-tertiary text-center text-lg-start mt-auto">
                 <div class="container">

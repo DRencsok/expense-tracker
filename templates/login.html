@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block main %}
+{% if session.get("user_id") %}
+    <div class="alert alert-info" role="alert">
+        You are already logged in.
+    </div>
+{% else %}
+<form method="POST" action="{{ url_for('main.login') }}">
+<div class="text-center">
+    <h1 class="text-info-emphasis">Login</h1>
+    <input type="text" placeholder="Username" class="form-control mb-2" name="username">
+    <input type="password" placeholder="Password" class="form-control mb-2" name="password">
+    <button class="btn btn-primary" id="login-btn">Login</button>
+    <hr>
+    <p>Don't have an account?</p>
+    <a href="{{ url_for('main.register') }}" class="btn btn-secondary" type="submit">Register</a>
+</div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block main %}
+<form method="POST" action="{{ url_for('main.register') }}">
+<div class="text-center">
+    <h1 class="text-info-emphasis">Register</h1>
+    <input type="text" placeholder="Username" class="form-control mb-2" name="username">
+    <input type="password" placeholder="Password" class="form-control mb-2" name="password">
+    <input type="password" placeholder="Confirm Password" class="form-control mb-2" name="confirm_password">
+    <button class="btn btn-primary" id="register-btn">Register</button>
+    <hr>
+    <p>Already have an account?</p>
+    <a href="{{ url_for('main.login') }}" class="btn btn-secondary">Login</a>
+</div>
+</form>
+{% endblock %}
