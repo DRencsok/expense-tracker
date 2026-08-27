@@ -1,0 +1,166 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block main %}
+<div class="text-center mb-4">
+	<h1 class="text-info-emphasis">Spending Analytics</h1>
+</div>
+
+{% if transactions %}
+	<div class="mx-auto" style="max-width: 850px; height: 420px;">
+		<canvas id="spending-chart" aria-label="Line chart showing transaction amounts over time" role="img"></canvas>
+	</div>
+	<h2 class="h4 mt-5">All transactions</h2>
+	<section class="border rounded p-3 my-4" aria-labelledby="advice-heading">
+		<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+			<h2 class="h4 mb-0" id="advice-heading">Spending advice</h2>
+			<div class="btn-group" role="group" aria-label="Advice period">
+				<button type="button" class="btn btn-outline-info advice-period active" data-period="weekly">Weekly</button>
+				<button type="button" class="btn btn-outline-info advice-period" data-period="monthly">Monthly</button>
+			</div>
+		</div>
+		<p id="advice-status" class="text-secondary mt-3 mb-0">Choose a period to generate recommendations.</p>
+		<div id="advice-result" class="mt-3"></div>
+	</section>
+	<div class="list-group">
+		{% for transaction in transactions %}
+			<div class="list-group-item d-flex justify-content-between align-items-start">
+				<div>
+					<strong>{{ transaction["category"] }}</strong>
+					{% if transaction["description"] %}<div class="small text-secondary">{{ transaction["description"] }}</div>{% endif %}
+					<div class="small text-secondary">{{ transaction["spent_at"] }}</div>
+				</div>
+				<div class="d-flex align-items-center gap-2 ms-auto">
+					<span class="{% if transaction['transaction_type'] == 'income' %}text-success{% else %}text-danger{% endif %}">
+						{% if transaction['transaction_type'] == 'income' %}+{% else %}-{% endif %}${{ "%.2f"|format(transaction['amount']) }}
+					</span>
+					<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTransactionModal" data-transaction-id="{{ transaction['id'] }}">
+						Delete
+					</button>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	<div class="modal fade" id="deleteTransactionModal" tabindex="-1" aria-labelledby="deleteTransactionModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<form class="modal-content" method="post" action="{{ url_for('main.analytics') }}" id="deleteTransactionForm">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<input type="hidden" name="transaction_id" id="delete-transaction-id">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteTransactionModalLabel">Delete Transaction</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to delete this transaction?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-danger">Delete Transaction</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{% else %}
+	<p class="text-center text-secondary-emphasis">No transactions have been recorded yet.</p>
+{% endif %}
+
+{% if transactions %}
+<script id="spending-chart-data" type="application/json">
+{{ {"dates": transaction_dates, "amounts": transaction_amounts} | tojson }}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<!--Chart using Chart.js--> 
+<script>
+	const csrfToken = "{{ csrf_token() }}";
+	const adviceStatus = document.getElementById("advice-status");
+	const adviceResult = document.getElementById("advice-result");
+
+	document.querySelectorAll(".advice-period").forEach((button) => {
+		button.addEventListener("click", async () => {
+			document.querySelectorAll(".advice-period").forEach((periodButton) => periodButton.classList.remove("active"));
+			button.classList.add("active");
+			adviceStatus.textContent = "Analyzing your transactions...";
+			adviceResult.textContent = "";
+			try {
+				const response = await fetch("{{ url_for('main.analytics_advice') }}", {
+					method: "POST",
+					headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+					body: JSON.stringify({ period: button.dataset.period })
+				});
+				const contentType = response.headers.get("content-type") || "";
+				const data = contentType.includes("application/json")
+					? await response.json()
+					: { error: `The server returned an unexpected response (HTTP ${response.status}).` };
+
+				if (!response.ok) {
+					throw new Error(data.error || "Could not generate advice.");
+				}
+
+				adviceStatus.textContent = "Recommendations";
+				adviceResult.innerHTML = "";
+
+				data.advice.recommendations.forEach((recommendation, index) => {
+					const recommendationDiv = document.createElement("div");
+					recommendationDiv.className = "mb-4";
+
+					recommendationDiv.innerHTML = `
+						<h5>
+							<span class="badge rounded-pill text-bg-info me-2">
+								${index + 1}
+							</span>
+							${recommendation.title}
+						</h5>
+
+						<p class="text-secondary mb-2">
+							${recommendation.description}
+						</p>
+
+						<p class="mb-0">
+							<strong>Action:</strong>
+							${recommendation.action}
+						</p>
+					`;
+
+					adviceResult.appendChild(recommendationDiv);
+				});
+			} catch (error) {
+				adviceStatus.textContent = error.message;
+			}
+		});
+	});
+
+	// Handle delete transaction modal
+	document.getElementById("deleteTransactionModal").addEventListener("show.bs.modal", (event) => {
+		const deleteButton = event.relatedTarget;
+		document.getElementById("delete-transaction-id").value = deleteButton.dataset.transactionId;
+	});
+
+	const chartData = JSON.parse(document.getElementById("spending-chart-data").textContent);
+
+	new Chart(document.getElementById("spending-chart"), {
+		type: "line",
+		data: {
+			labels: chartData.dates,
+			datasets: [{
+				label: "Transaction amount",
+				data: chartData.amounts,
+				borderColor: "#20c997",
+				backgroundColor: "rgba(32, 201, 151, 0.2)",
+				fill: true,
+				tension: 0.25
+			}]
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: { y: { beginAtZero: true } },
+			plugins: {
+				legend: { position: "bottom" },
+				tooltip: { callbacks: { label: (context) => `${context.raw < 0 ? "-" : "+"}$${Math.abs(context.raw).toFixed(2)}` } }
+			}
+		}
+	});
+</script>
+{% endif %}
+{% endblock %}

@@ -5,7 +5,13 @@ Register
 {% endblock %}
 
 {% block main %}
+{% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+{% endif %}
 <form method="POST" action="{{ url_for('main.register') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="text-center">
     <h1 class="text-info-emphasis">Register</h1>
     <input type="text" placeholder="Username" class="form-control mb-2" name="username">

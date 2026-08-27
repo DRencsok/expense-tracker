@@ -10,7 +10,13 @@ Login
         You are already logged in.
     </div>
 {% else %}
+{% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+{% endif %}
 <form method="POST" action="{{ url_for('main.login') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="text-center">
     <h1 class="text-info-emphasis">Login</h1>
     <input type="text" placeholder="Username" class="form-control mb-2" name="username">

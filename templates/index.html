@@ -4,16 +4,180 @@
 
 {% block main %}
 {% if session.get("user_id") %}
-    <div class="text-center">
-        <h1>Welcome back, {{ session.get("username") }}!</h1>
-       
+    <div class="text-center mb-4">
+        <h1 class="text-info-emphasis">Welcome back, {{ session.get("username") }}!</h1>
     </div>
+
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-6">
+            <div class="mx-auto" style="max-width: 520px; height: 420px;">
+                {% if categories %}
+                    <canvas id="spending-chart" aria-label="Pie chart showing spending by category" role="img" data-categories='{{ categories | tojson }}' data-totals='{{ totals | tojson }}'></canvas>
+                {% else %}
+                    <p class="text-center text-secondary-emphasis">No expenses have been recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            {% if recent_transactions %}
+                <div class="list-group mb-4">
+                    {% for transaction in recent_transactions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ transaction["category"] }}</strong>
+                                {% if transaction["description"] %}<div class="small text-secondary">{{ transaction["description"] }}</div>{% endif %}
+                                <div class="small text-secondary">{{ transaction["spent_at"] }}</div>
+                            </div>
+                            <span class="{% if transaction['transaction_type'] == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                {% if transaction["transaction_type"] == "income" %}+{% else %}-{% endif %}${{ "%.2f"|format(transaction["amount"]) }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-secondary-emphasis">No transactions have been recorded yet.</p>
+            {% endif %}
+            <div class="row text-center g-2">
+                <div class="col-6"><div class="border rounded p-3"><div class="small text-secondary">Income</div><strong class="text-success">+${{ "%.2f"|format(income_total) }}</strong></div></div>
+                <div class="col-6"><div class="border rounded p-3"><div class="small text-secondary">Expenses</div><strong class="text-danger">-${{ "%.2f"|format(expense_total) }}</strong></div></div>
+            </div>
+        </div>
+    </div>
+<!-- Button for adding expenses -->
+<button type="button" class="btn btn-red rounded-circle" data-bs-toggle="modal" data-bs-target="#transactionModal">-</button>
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="post" action="{{ url_for('main.index') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Add Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="transaction_type" value="expense">
+                <input type="hidden" name="category" id="expense-category" required>
+                <div class="modal-step" data-step="expense-category-step">
+                    <h6>Choose a category</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Food" data-target="expense-category">Food</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Car" data-target="expense-category">Car</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Living" data-target="expense-category">Living</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Shopping" data-target="expense-category">Shopping</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Travel" data-target="expense-category">Travel</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Fun" data-target="expense-category">Fun</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Health" data-target="expense-category">Health</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other" data-target="expense-category">Other</button>
+                    </div>
+                </div>
+                <div class="modal-step d-none" data-step="expense-amount-step">
+                    <label class="form-label" for="expense-amount">Amount</label>
+                    <input class="form-control" id="expense-amount" name="amount" type="number" min="0.01" step="0.01" required>
+                    <button type="button" class="btn btn-primary mt-3 next-step" data-next="expense-description-step">Next</button>
+                </div>
+                <div class="modal-step d-none" data-step="expense-description-step">
+                    <label class="form-label" for="expense-description">Description</label>
+                    <input class="form-control" id="expense-description" name="description" type="text">
+                    <button type="submit" class="btn btn-danger mt-3">Save expense</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Button for adding income -->
+<button type="button" class="btn btn-green rounded-circle" data-bs-toggle="modal" data-bs-target="#incomeModal">+</button>
+<div class="modal fade" id="incomeModal" tabindex="-1" aria-labelledby="incomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="post" action="{{ url_for('main.index') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h5 class="modal-title" id="incomeModalLabel">Add Income</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="transaction_type" value="income">
+                <input type="hidden" name="category" id="income-category" required>
+                <div class="modal-step" data-step="income-category-step">
+                    <h6>Choose a category</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Salary" data-target="income-category">Salary</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other Income" data-target="income-category">Other Income</button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Side Job" data-target="income-category">Side Job</button>
+                    </div>
+                </div>
+                <div class="modal-step d-none" data-step="income-amount-step">
+                    <label class="form-label" for="income-amount">Amount</label>
+                    <input class="form-control" id="income-amount" name="amount" type="number" min="0.01" step="0.01" required>
+                    <button type="button" class="btn btn-primary mt-3 next-step" data-next="income-description-step">Next</button>
+                </div>
+                <div class="modal-step d-none" data-step="income-description-step">
+                    <label class="form-label" for="income-description">Description</label>
+                    <input class="form-control" id="income-description" name="description" type="text">
+                    <button type="submit" class="btn btn-success mt-3">Save income</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Check for user submission -->
+<script>
+    // Handle category button clicks
+    document.querySelectorAll(".category-button").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.getElementById(button.dataset.target).value = button.dataset.category;
+            const modal = button.closest(".modal");
+            modal.querySelector('[data-step$="category-step"]').classList.add("d-none");
+            modal.querySelector('[data-step$="amount-step"]').classList.remove("d-none");
+        });
+    });
+    // Handle next step button clicks
+    document.querySelectorAll(".next-step").forEach((button) => {
+        button.addEventListener("click", () => {
+            const modal = button.closest(".modal");
+            const amount = modal.querySelector('input[name="amount"]');
+            if (!amount.reportValidity()) {
+                return;
+            }
+            modal.querySelector('[data-step$="amount-step"]').classList.add("d-none");
+            modal.querySelector(`[data-step="${button.dataset.next}"]`).classList.remove("d-none");
+        });
+    });
+    // Reset modal on close
+    document.querySelectorAll(".modal").forEach((modal) => {
+        modal.addEventListener("hidden.bs.modal", () => {
+            modal.querySelector("form").reset();
+            modal.querySelectorAll(".modal-step").forEach((step) => step.classList.add("d-none"));
+            modal.querySelector('[data-step$="category-step"]').classList.remove("d-none");
+        });
+    });
+</script>
 {% else %}
 <div class="text-center">
     <h1 class="text-info-emphasis">Welcome to SaveIt!</h1>
     <p class="text-secondary-emphasis">
-        Please register or log in to access the full features of the application. SaveIt helps you track your expenses, analyze your spending habits, and plan your budget effectively.
+        Please register or log in to access the full features of the application.
+    </p>
+    <p class="text-secondary-emphasis">
+        SaveIt helps you track your expenses, analyze your spending habits, and plan your budget effectively.
     </p>
 </div>
+{% endif %}
+
+{% if session.get("user_id") and categories %}
+<!--Chart using Chart.js-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    const spendingChart = document.getElementById("spending-chart");
+    new Chart(spendingChart, {
+        type: "pie",
+        data: {
+            labels: JSON.parse(spendingChart.dataset.categories),
+            datasets: [{
+                data: JSON.parse(spendingChart.dataset.totals),
+                backgroundColor: ["#0d6efd", "#20c997", "#ffc107", "#dc3545", "#6f42c1", "#fd7e14"]
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+    });
+</script>
 {% endif %}
 {% endblock %}

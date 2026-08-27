@@ -13,3 +13,41 @@ body {
 main {
     flex: 1;
 }
+
+.btn-green {
+    background-color: #15803d !important;
+    border-color: #15803d !important;
+    color: white !important;
+
+    position: fixed;
+    left: 1.5rem;
+    bottom: 3.5rem;
+    z-index: 1050;
+    width: 7rem;
+    height: 7rem;
+
+}
+
+.btn-green:hover {
+    background-color: #166534 !important;
+    border-color: #166534 !important;
+}
+
+.btn-red {
+    background-color: #b91c1c !important;
+    border-color: #991b1b !important;
+    color: white !important;
+
+    position: fixed;
+    right: 1.5rem;
+    bottom: 3.5rem;
+    z-index: 1050;
+    width: 7rem;
+    height: 7rem;
+
+}
+
+.btn-red:hover {
+    background-color: #8b0000 !important;
+    border-color: #840000 !important;
+}
