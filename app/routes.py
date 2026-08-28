@@ -4,6 +4,8 @@ from flask import Blueprint, jsonify, render_template, request, url_for, session
 from openai import APIConnectionError, APIStatusError, AuthenticationError, OpenAI, OpenAIError, RateLimitError
 from app.database import get_db
 from app.auth import hash_password, login_required, verify_password
+from datetime import datetime
+import calendar as cal
 
 main = Blueprint("main", __name__)
 
@@ -162,27 +164,20 @@ def analytics():
 @main.route("/analytics/advice", methods=["POST"])
 @login_required
 def analytics_advice():
-    #use openai api to get advice
-    payload = request.get_json(silent=True) or {}
-    period = payload.get("period", "weekly") if request.is_json else "weekly"
-    if period not in {"weekly", "monthly"}:
-        return jsonify(error="Choose weekly or monthly analysis."), 400
-
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return jsonify(error="OPENAI_API_KEY is not configured."), 503
 
-    days = 7 if period == "weekly" else 30
     db = get_db()
     rows = db.execute(
         """
         SELECT transaction_type, category, SUM(amount) AS total
         FROM expenses
-        WHERE user_id = ? AND spent_at >= date('now', ?)
+        WHERE user_id = ? AND spent_at >= date('now', 'start of month')
         GROUP BY transaction_type, category
         ORDER BY total DESC
         """,
-        (session["user_id"], f"-{days - 1} days"),
+        (session["user_id"],),
     ).fetchall()
 
     summary = [
@@ -198,31 +193,53 @@ def analytics_advice():
         response = client.responses.create(
             model="gpt-4o-mini",
             input=(
-                "You are a practical personal finance assistant. Analyze this user's "
-                f"""
-                    Analyze this user's {period} transaction summary:
-
-                    {summary}
-
-                    Give exactly 3 short, specific recommendations.
-
-                    Return ONLY valid JSON in this format:
-
-                    {{
-                        "recommendations": [
-                            {{
-                                "title": "Short recommendation title",
-                                "description": "Short explanation",
-                                "action": "One practical action"
-                            }}
-                        ]
-                    }}
-
-                    Do not invent facts.
-                    Mention when there is not enough data.
-                    This is general education, not financial advice.
-                    """
+                "You are a practical personal finance assistant. "
+                "Analyze this user's current-month transaction summary.\n\n"
+                f"{summary}\n\n"
+                "Give exactly 3 short, specific recommendations. "
+                "Do not invent facts. "
+                "Mention when there is not enough data. "
+                "This is general education, not financial advice."
             ),
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "finance_recommendations",
+                    "strict": True,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "recommendations": {
+                                "type": "array",
+                                "minItems": 3,
+                                "maxItems": 3,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "action": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "title",
+                                        "description",
+                                        "action"
+                                    ],
+                                    "additionalProperties": False
+                                }
+                            }
+                        },
+                        "required": ["recommendations"],
+                        "additionalProperties": False
+                    }
+                }
+            }
         )
     except AuthenticationError:
         return jsonify(error="The OpenAI API key was rejected. Check that it is active and restart Flask."), 502
@@ -239,19 +256,103 @@ def analytics_advice():
         data = json.loads(response.output_text)
     except json.JSONDecodeError:
         return jsonify(error="OpenAI returned an invalid recommendation format."), 502
+
     return jsonify(advice=data)
 
 @main.route("/calendar")
 @login_required
 def calendar():
     db = get_db()
-    return render_template("calendar.html", db=db)
+
+    #Get dates
+    now = datetime.now()
+    year = request.args.get("year", now.year, type = int)
+    month = request.args.get("month", now.month, type = int)
+
+    selected_month = f"{year:04d}-{month:02d}"
+
+    transactions = db.execute(
+        """
+        SELECT transaction_type, spent_at, SUM(amount) as total
+          FROM expenses
+         WHERE user_id = ?
+           AND strftime('%Y-%m', spent_at) = ?
+         GROUP BY spent_at, transaction_type
+         ORDER BY spent_at 
+        """,
+        (session['user_id'],selected_month),
+    ).fetchall()
+
+    #The calendar
+    first_weekday, number_of_days = cal.monthrange(year, month)
+
+    days = []
+    for _ in range(first_weekday):
+        days.append(None)
+    for day in range(1, number_of_days + 1):
+        days.append(day)
+
+    while len(days) not in (35, 42):
+        days.append(None)
+
+    #The day combined with expenses
+    transactions_by_day = {}
+    for day in days:
+        if day is None:
+            continue
+        transactions_by_day[day] = {
+            "income": 0,
+            "expense": 0,
+        }
+
+        for transaction in transactions:
+            date_day = int(transaction["spent_at"][-2:])
+
+            if date_day == day:
+                transactions_by_day[day][transaction["transaction_type"]] = transaction["total"]
+
+    #Previous month
+    if month == 1:
+        previous_month = 12
+        previous_year = year - 1
+    else:
+        previous_month = month - 1
+        previous_year = year
+
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else:
+        next_month = month + 1
+        next_year = year
+
+    month_name = datetime(year, month, 1).strftime("%B")
+
+    return render_template("calendar.html", days=days, 
+                           transactions_by_day=transactions_by_day,
+                           year=year,
+                           month=month,
+                           previous_year=previous_year,
+                           previous_month=previous_month,
+                           next_year=next_year,
+                           next_month=next_month,
+                           month_name=month_name
+                           )
 
 @main.route("/profile")
 @login_required
 def profile():
     db = get_db()
-    return render_template("profile.html", db=db)
+    total_expenses = db.execute(
+        """
+        SELECT
+            COUNT(id) 
+            FROM expenses 
+            WHERE user_id = ?
+        """, (session['user_id'],),
+    ).fetchone()[0]
+
+    return render_template("profile.html", amount=total_expenses)
 
 @main.route("/settings")
 @login_required

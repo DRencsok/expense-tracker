@@ -51,3 +51,60 @@ main {
     background-color: #8b0000 !important;
     border-color: #840000 !important;
 }
+
+.category-button {
+    width: 6rem;
+    height: 6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.category-icon {
+    font-size: 30px;
+}
+
+.category-btn small {
+    color: #adb5bd;
+    font-size: 12px;
+    display: block;
+    min-width: 70px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.profile-picture {
+    width: 20rem;
+    height: 15rem;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day {
+    min-height: 90px;
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.transactions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 20px;
+}

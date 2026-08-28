@@ -2,5 +2,9 @@
  {% block title %}Profile{% endblock %}
  
  {% block main %}
- 
+<div class="profile text-center mb-4">
+    <img src="/static/images/logo.png" class="profile-picture">
+    <h1 class="profile text-info-emphasis">{{ session.get("username") }}</h1>
+    <p class="profile"> Transactions recorded: <span class="text-info-emphasis">{{ amount }}</span></p>
+</div>
  {% endblock %}

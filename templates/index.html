@@ -10,7 +10,7 @@
 
     <div class="row g-4 align-items-start">
         <div class="col-lg-6">
-            <div class="mx-auto" style="max-width: 520px; height: 420px;">
+            <div class="mx-auto gap-2" style="max-width: 520px; height: 420px;">
                 {% if categories %}
                     <canvas id="spending-chart" aria-label="Pie chart showing spending by category" role="img" data-categories='{{ categories | tojson }}' data-totals='{{ totals | tojson }}'></canvas>
                 {% else %}
@@ -50,23 +50,47 @@
         <form class="modal-content" method="post" action="{{ url_for('main.index') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="modal-header">
-                <h5 class="modal-title" id="transactionModalLabel">Add Expense</h5>
+                <h5 class="text-center modal-title" id="transactionModalLabel">Add Expense</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" name="transaction_type" value="expense">
                 <input type="hidden" name="category" id="expense-category" required>
                 <div class="modal-step" data-step="expense-category-step">
-                    <h6>Choose a category</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Food" data-target="expense-category">Food</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Car" data-target="expense-category">Car</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Living" data-target="expense-category">Living</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Shopping" data-target="expense-category">Shopping</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Travel" data-target="expense-category">Travel</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Fun" data-target="expense-category">Fun</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Health" data-target="expense-category">Health</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other" data-target="expense-category">Other</button>
+                    <h6 class="text-center">Choose a category</h6>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Food" data-target="expense-category">
+                            <span class="category-icon">🍔</span>
+                            <small>Food</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Transport" data-target="expense-category">
+                            <span class="category-icon">🚗</span>
+                            <small>Transport</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Living" data-target="expense-category">
+                            <span class="category-icon">🏡</span>
+                            <small>Living</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Shopping" data-target="expense-category">
+                            <span class="category-icon">🛒</span>
+                            <small>Shopping</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Travel" data-target="expense-category">
+                            <span class="category-icon">✈️</span>
+                            <small>Travel</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Fun" data-target="expense-category">
+                            <span class="category-icon">🎮</span>
+                            <small>Fun</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Health" data-target="expense-category">
+                            <span class="category-icon">💊</span>
+                            <small>Health</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other" data-target="expense-category">
+                            <span class="category-icon">💿</span>
+                            <small>Other</small>
+                        </button>
                     </div>
                 </div>
                 <div class="modal-step d-none" data-step="expense-amount-step">
@@ -97,11 +121,20 @@
                 <input type="hidden" name="transaction_type" value="income">
                 <input type="hidden" name="category" id="income-category" required>
                 <div class="modal-step" data-step="income-category-step">
-                    <h6>Choose a category</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Salary" data-target="income-category">Salary</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other Income" data-target="income-category">Other Income</button>
-                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Side Job" data-target="income-category">Side Job</button>
+                    <h6 class="text-center">Choose a category</h6>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Salary" data-target="income-category">
+                            <span class="category-icon">💸</span>
+                            <small>Salary</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Other Income" data-target="income-category">
+                            <span class="category-icon">💰</span>
+                            <small>Other Income</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary category-button" data-category="Side Job" data-target="income-category">
+                            <span class="category-icon">🪙</span>
+                            <small>Side Job</small>
+                        </button>
                     </div>
                 </div>
                 <div class="modal-step d-none" data-step="income-amount-step">

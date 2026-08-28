@@ -5,6 +5,40 @@
 {% endblock %}
 
 {% block main %}
-<p class="text-secondary-emphasis">Calendar is currently under development.</p>
-<p class="text-muted">Sorry for the inconvenience.</p>
+<div class="calendar-header">
+
+    <a href="{{ url_for('main.calendar', year=previous_year, month=previous_month) }}"
+       class="btn btn-outline-light">
+        ←
+    </a>
+
+    <h2 class="text-info-emphasis">{{ month_name }} {{ year }}</h2>
+
+    <a href="{{ url_for('main.calendar', year=next_year, month=next_month) }}"
+       class="btn btn-outline-light">
+        →
+    </a>
+
+</div>
+<div class="calendar">
+    {% for day in days %}
+        <div class="day border rounded p-4">
+            {% if day %}
+                <strong>{{ day }}</strong>
+                <div class="transactions">
+                {% if transactions_by_day[day]["income"] %}
+                    <span class="badge rounded-pill text-bg-success">
+                        +${{ transactions_by_day[day]["income"] }}
+                    </span>
+                {% endif %}
+                {% if transactions_by_day[day]["expense"] %}
+                    <span class="badge rounded-pill text-bg-danger">
+                        -${{ transactions_by_day[day]["expense"] }}
+                    </span>
+                {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}   
+</div>
 {% endblock %}

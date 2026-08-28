@@ -15,12 +15,9 @@
 	<section class="border rounded p-3 my-4" aria-labelledby="advice-heading">
 		<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
 			<h2 class="h4 mb-0" id="advice-heading">Spending advice</h2>
-			<div class="btn-group" role="group" aria-label="Advice period">
-				<button type="button" class="btn btn-outline-info advice-period active" data-period="weekly">Weekly</button>
-				<button type="button" class="btn btn-outline-info advice-period" data-period="monthly">Monthly</button>
-			</div>
+			<button type="button" class="btn btn-outline-info" id="analyze-advice">Analyze</button>
 		</div>
-		<p id="advice-status" class="text-secondary mt-3 mb-0">Choose a period to generate recommendations.</p>
+		<p id="advice-status" class="text-secondary mt-3 mb-0">Analyze your current month.</p>
 		<div id="advice-result" class="mt-3"></div>
 	</section>
 	<div class="list-group">
@@ -72,62 +69,62 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <!--Chart using Chart.js--> 
 <script>
+	//Put the analysis on the page
 	const csrfToken = "{{ csrf_token() }}";
 	const adviceStatus = document.getElementById("advice-status");
 	const adviceResult = document.getElementById("advice-result");
+	const analyzeAdviceButton = document.getElementById("analyze-advice");
 
-	document.querySelectorAll(".advice-period").forEach((button) => {
-		button.addEventListener("click", async () => {
-			document.querySelectorAll(".advice-period").forEach((periodButton) => periodButton.classList.remove("active"));
-			button.classList.add("active");
-			adviceStatus.textContent = "Analyzing your transactions...";
-			adviceResult.textContent = "";
-			try {
-				const response = await fetch("{{ url_for('main.analytics_advice') }}", {
-					method: "POST",
-					headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
-					body: JSON.stringify({ period: button.dataset.period })
-				});
-				const contentType = response.headers.get("content-type") || "";
-				const data = contentType.includes("application/json")
-					? await response.json()
-					: { error: `The server returned an unexpected response (HTTP ${response.status}).` };
+	analyzeAdviceButton.addEventListener("click", async () => {
+		analyzeAdviceButton.disabled = true;
+		adviceStatus.textContent = "Analyzing your transactions...";
+		adviceResult.textContent = "";
+		try {
+			const response = await fetch("{{ url_for('main.analytics_advice') }}", {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+			});
+			const contentType = response.headers.get("content-type") || "";
+			const data = contentType.includes("application/json")
+				? await response.json()
+				: { error: `The server returned an unexpected response (HTTP ${response.status}).` };
 
-				if (!response.ok) {
-					throw new Error(data.error || "Could not generate advice.");
-				}
-
-				adviceStatus.textContent = "Recommendations";
-				adviceResult.innerHTML = "";
-
-				data.advice.recommendations.forEach((recommendation, index) => {
-					const recommendationDiv = document.createElement("div");
-					recommendationDiv.className = "mb-4";
-
-					recommendationDiv.innerHTML = `
-						<h5>
-							<span class="badge rounded-pill text-bg-info me-2">
-								${index + 1}
-							</span>
-							${recommendation.title}
-						</h5>
-
-						<p class="text-secondary mb-2">
-							${recommendation.description}
-						</p>
-
-						<p class="mb-0">
-							<strong>Action:</strong>
-							${recommendation.action}
-						</p>
-					`;
-
-					adviceResult.appendChild(recommendationDiv);
-				});
-			} catch (error) {
-				adviceStatus.textContent = error.message;
+			if (!response.ok) {
+				throw new Error(data.error || "Could not generate advice.");
 			}
-		});
+
+			adviceStatus.textContent = "Recommendations";
+			adviceResult.innerHTML = "";
+
+			data.advice.recommendations.forEach((recommendation, index) => {
+				const recommendationDiv = document.createElement("div");
+				recommendationDiv.className = "mb-4";
+
+				recommendationDiv.innerHTML = `
+					<h5>
+						<span class="badge rounded-pill text-bg-info me-2">
+							${index + 1}
+						</span>
+						${recommendation.title}
+					</h5>
+
+					<p class="text-secondary mb-2">
+						${recommendation.description}
+					</p>
+
+					<p class="mb-0">
+						<strong>Action:</strong>
+						${recommendation.action}
+					</p>
+				`;
+
+			adviceResult.appendChild(recommendationDiv);
+			});
+		} catch (error) {
+			adviceStatus.textContent = error.message;
+		} finally {
+			analyzeAdviceButton.disabled = false;
+		}
 	});
 
 	// Handle delete transaction modal
