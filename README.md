@@ -2,6 +2,28 @@
 
 SaveIt is a personal expense tracker built with Flask and SQLite. It helps users record income and expenses, see spending trends, review transactions by month, and receive concise AI-generated budgeting suggestions based on their current-month activity.
 
+## Screenshots
+
+## Dashboard
+
+![SaveIt Dashboard](screenshots/Screenshot1.png)
+
+## Spending Analytics
+
+![Spending Analytics](screenshots/Screenshot2.png)
+
+## AI Powered Spending Advice
+
+![Spending Advice](screenshots/Screenshot3.png)
+
+## Add Expense
+
+![Add Expense](screenshots/Screenshot4.png)
+
+## Calendar 
+
+![Calendar](screenshots/Screenshot5.png)
+
 > **In progress:** I am building AI-powered receipt scanning. The goal is to upload a receipt, extract the merchant, date, amount, and likely category, then let the user review the result before SaveIt creates the transaction.
 
 ## Features
