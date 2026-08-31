@@ -101,12 +101,13 @@ def register():
             return render_template("register.html", error="Passwords do not match.")
         if db.execute ("SELECT id FROM users WHERE username = ?", (request.form["username"],)).fetchone() is not None:
             return render_template("register.html", error="Username already exists.")
-        if len(password) < 8:
-            return render_template("register.html", error="Password must be at least 8 characters long")
     
         username = request.form["username"]
         password = request.form["password"]
         hashed_password = hash_password(password)
+
+        if len(password) < 8:
+            return render_template("register.html", error="Password must be at least 8 characters long")
 
         # Save user to database
         db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
