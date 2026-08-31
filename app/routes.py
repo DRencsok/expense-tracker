@@ -73,7 +73,6 @@ def index():
         income_total=float(totals["income"]),
         expense_total=float(totals["expenses"]),
     )
-
 @main.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -102,6 +101,8 @@ def register():
             return render_template("register.html", error="Passwords do not match.")
         if db.execute ("SELECT id FROM users WHERE username = ?", (request.form["username"],)).fetchone() is not None:
             return render_template("register.html", error="Username already exists.")
+        if len(password) < 8:
+            return render_template("register.html", error="Password must be at least 8 characters long")
     
         username = request.form["username"]
         password = request.form["password"]
@@ -354,11 +355,56 @@ def profile():
 
     return render_template("profile.html", amount=total_expenses)
 
-@main.route("/settings")
+@main.route("/settings", methods=["POST", "GET"],)
 @login_required
 def settings():
     db = get_db()
-    return render_template("settings.html", db=db)
+    #Check for user input
+    if request.method == "POST":
+
+        #Check whick form
+        if "change_password" in request.form:    
+            if not request.form["oldPassword"] or not request.form["newPassword"]:
+                return render_template("settings.html", error="Fields cannot be empty")
+            old_password = request.form["oldPassword"]
+            new_password = request.form["newPassword"]
+
+            if len(new_password) < 8:
+                return render_template("setting.html", error="Password must be at least 8 characters long")
+            user_password = db.execute("""
+            SELECT password
+            FROM users
+            WHERE id = ?
+            """,(session['user_id'],)).fetchone()
+
+            #Check corectness of old password
+            if not verify_password(user_password["password"], old_password):
+                return render_template("settings.html", error="Old password incorrect")
+            
+            new_hash = hash_password(new_password)
+
+            db.execute("UPDATE users SET password = ? WHERE id = ?",(new_hash, session['user_id'],))
+            db.commit()
+            flash("Change was successful!", "success")
+            return redirect(url_for("main.index"))
+
+        elif "change_username" in request.form:
+            if not request.form["newUsername"]:
+                return render_template("settings.html", error="Field cannot be empty")
+            new_username = request.form["newUsername"]
+
+            if db.execute ("SELECT id FROM users WHERE username = ?", (new_username,)).fetchone() is not None:
+                        return render_template("register.html", error="Username already exists.")
+
+            db.execute("UPDATE users SET username = ? WHERE id = ?", (new_username, session['user_id'],))
+            db.commit()
+            session["username"] = new_username
+            
+            flash("Change was successful!", "success")
+            return redirect(url_for("main.index"))
+
+        
+    return render_template("settings.html")
 
 @main.route("/logout", methods=["POST"])
 @login_required

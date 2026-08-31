@@ -108,3 +108,7 @@ main {
     gap: 30px;
     margin-bottom: 20px;
 }
+
+h1 {
+    text-align: center;
+}

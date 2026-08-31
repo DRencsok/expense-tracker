@@ -19,13 +19,15 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#appMenu" aria-controls="appMenu" aria-label="Open navigation menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <a class="navbar-brand ms-2" href="{{ url_for('main.index') }}">SaveIt</a>
+    
+                <a class="navbar-brand ms-2 text-info-emphasis" href="{{ url_for('main.index') }}">SaveIt</a>
             </div>
         </nav>
 
         <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="appMenu" aria-labelledby="appMenuLabel">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="appMenuLabel">SaveIt</h5>
+                <img src="static/images/logo.png" alt="logo" width="20px" height="20px">
+                <h5 class="offcanvas-title text-info-emphasis" id="appMenuLabel">SaveIt</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
